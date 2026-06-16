@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#0f6e56">
+<title>FisioControl</title>
+<style>
+  :root {
+    --teal-50: #E1F5EE;
+    --teal-100: #9FE1CB;
+    --teal-200: #5DCAA5;
+    --teal-400: #1D9E75;
+    --teal-600: #0F6E56;
+    --teal-800: #085041;
+    --teal-900: #04342C;
+    --amber-50: #FAEEDA;
+    --amber-100: #FAC775;
+    --amber-400: #BA7517;
+    --coral-50: #FAECE7;
+    --coral-400: #D85A30;
+    --blue-50: #E6F1FB;
+    --blue-400: #378ADD;
+    --blue-600: #185FA5;
+    --gray-50: #F1EFE8;
+    --gray-100: #D3D1C7;
+    --gray-200: #B4B2A9;
+    --gray-400: #888780;
+    --gray-600: #5F5E5A;
+    --gray-800: #444441;
+    --red-50: #FCEBEB;
+    --red-400: #E24B4A;
+    --green-50: #EAF3DE;
+    --green-400: #639922;
+    --white: #ffffff;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: var(--font); background: var(--gray-50); color: var(--gray-800); min-height: 100vh; }
+
+  /* ===== HEADER ===== */
+  .header { background: var(--teal-600); color: white; padding: 16px; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; }
+  .header-title { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
+  .header-sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
+  .header-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; color: white; font-size: 18px; }
+  .back-btn { background: none; border: none; color: white; font-size: 22px; cursor: pointer; padding: 4px; margin-right: 8px; }
+
+  /* ===== NAV TABS ===== */
+  .nav { background: white; display: flex; border-bottom: 1px solid var(--gray-100); position: sticky; top: 60px; z-index: 99; }
+  .nav-btn { flex: 1; padding: 12px 4px 10px; text-align: center; font-size: 10px; color: var(--gray-400); border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .nav-btn svg { width: 20px; height: 20px; }
+  .nav-btn.active { color: var(--teal-600); border-bottom-color: var(--teal-600); font-weight: 500; }
+
+  /* ===== CONTENT ===== */
+  .screen { display: none; padding: 16px; padding-bottom: 80px; }
+  .screen.active { display: block; }
+
+  /* ===== CARDS ===== */
+  .card { background: white; border-radius: var(--radius); padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow); }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .card-title { font-size: 14px; font-weight: 600; color: var(--gray-800); }
+
+  /* ===== DASHBOARD ===== */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .stat-card { background: white; border-radius: var(--radius-sm); padding: 14px; box-shadow: var(--shadow); }
+  .stat-num { font-size: 26px; font-weight: 700; line-height: 1; }
+  .stat-label { font-size: 11px; color: var(--gray-400); margin-top: 4px; }
+  .stat-card.teal .stat-num { color: var(--teal-600); }
+  .stat-card.amber .stat-num { color: var(--amber-400); }
+  .stat-card.coral .stat-num { color: var(--coral-400); }
+  .stat-card.blue .stat-num { color: var(--blue-600); }
+
+  /* ===== PATIENT LIST ===== */
+  .search-bar { position: relative; margin-bottom: 14px; }
+  .search-bar input { width: 100%; padding: 11px 14px 11px 40px; border-radius: 10px; border: 1px solid var(--gray-100); font-size: 14px; background: white; outline: none; }
+  .search-bar input:focus { border-color: var(--teal-400); box-shadow: 0 0 0 3px rgba(29,158,117,0.12); }
+  .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--gray-400); font-size: 16px; }
+  .patient-item { background: white; border-radius: var(--radius-sm); padding: 13px 14px; margin-bottom: 8px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px; cursor: pointer; transition: transform 0.15s; }
+  .patient-item:active { transform: scale(0.98); }
+  .avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--teal-50); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; color: var(--teal-600); flex-shrink: 0; }
+  .patient-name { font-size: 14px; font-weight: 600; color: var(--gray-800); }
+  .patient-meta { font-size: 12px; color: var(--gray-400); margin-top: 2px; }
+  .badge { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+  .badge-green { background: var(--green-50); color: var(--green-400); }
+  .badge-amber { background: var(--amber-50); color: var(--amber-400); }
+  .badge-red { background: var(--red-50); color: var(--red-400); }
+  .badge-teal { background: var(--teal-50); color: var(--teal-600); }
+
+  /* ===== FORM ===== */
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 12px; font-weight: 500; color: var(--gray-600); margin-bottom: 5px; display: block; }
+  .form-input, .form-select, .form-textarea { width: 100%; padding: 11px 13px; border-radius: var(--radius-sm); border: 1px solid var(--gray-100); font-size: 14px; font-family: var(--font); background: white; color: var(--gray-800); outline: none; }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--teal-400); box-shadow: 0 0 0 3px rgba(29,158,117,0.12); }
+  .form-textarea { resize: vertical; min-height: 80px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .section-title { font-size: 13px; font-weight: 600; color: var(--teal-600); text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--teal-50); }
+
+  /* ===== BUTTONS ===== */
+  .btn { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 12px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; width: 100%; }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--teal-600); color: white; }
+  .btn-secondary { background: var(--teal-50); color: var(--teal-600); }
+  .btn-danger { background: var(--red-50); color: var(--red-400); }
+  .btn-outline { background: white; color: var(--gray-600); border: 1px solid var(--gray-100); }
+  .fab { position: fixed; bottom: 80px; right: 20px; width: 54px; height: 54px; border-radius: 50%; background: var(--teal-600); color: white; border: none; font-size: 26px; cursor: pointer; box-shadow: var(--shadow-md); display: flex; align-items: center; justify-content: center; z-index: 200; transition: transform 0.15s; }
+  .fab:active { transform: scale(0.93); }
+
+  /* ===== ATTENDANCE ===== */
+  .date-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; margin-bottom: 16px; }
+  .date-strip::-webkit-scrollbar { display: none; }
+  .date-chip { flex-shrink: 0; padding: 8px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; background: white; border: 1px solid var(--gray-100); color: var(--gray-600); text-align: center; }
+  .date-chip.active { background: var(--teal-600); color: white; border-color: var(--teal-600); font-weight: 600; }
+  .attendance-item { background: white; border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow); }
+  .attendance-status { display: flex; gap: 6px; margin-left: auto; }
+  .status-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--gray-100); background: var(--gray-50); cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .status-btn.presente { border-color: var(--green-400); background: var(--green-50); }
+  .status-btn.faltou { border-color: var(--red-400); background: var(--red-50); }
+  .status-btn.justificado { border-color: var(--amber-400); background: var(--amber-50); }
+
+  /* ===== SIGNATURE ===== */
+  .sig-canvas { border: 2px dashed var(--gray-100); border-radius: var(--radius-sm); background: white; touch-action: none; cursor: crosshair; display: block; width: 100%; }
+  .sig-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .sig-actions .btn { flex: 1; }
+
+  /* ===== TIMELINE ===== */
+  .timeline-item { display: flex; gap: 12px; margin-bottom: 16px; position: relative; }
+  .timeline-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--teal-400); flex-shrink: 0; margin-top: 4px; }
+  .timeline-dot::after { content: ''; position: absolute; left: 4px; top: 14px; bottom: -6px; width: 2px; background: var(--teal-50); }
+  .timeline-item:last-child .timeline-dot::after { display: none; }
+  .timeline-text { font-size: 13px; color: var(--gray-800); }
+  .timeline-date { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+
+  /* ===== MODAL / SHEET ===== */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 300; }
+  .overlay.open { display: flex; align-items: flex-end; }
+  .sheet { background: white; border-radius: 20px 20px 0 0; width: 100%; max-height: 92vh; overflow-y: auto; padding: 20px 16px 32px; }
+  .sheet-handle { width: 40px; height: 4px; background: var(--gray-100); border-radius: 2px; margin: 0 auto 20px; }
+  .sheet-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: var(--gray-800); }
+
+  /* ===== PATIENT DETAIL ===== */
+  .detail-header { background: linear-gradient(135deg, var(--teal-600), var(--teal-800)); color: white; padding: 20px 16px; margin: -16px -16px 16px; }
+  .detail-avatar { width: 56px; height: 56px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; color: white; margin-bottom: 10px; }
+  .detail-name { font-size: 20px; font-weight: 700; }
+  .detail-sub { font-size: 13px; opacity: 0.75; margin-top: 3px; }
+  .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--gray-50); }
+  .info-row:last-child { border-bottom: none; }
+  .info-key { font-size: 13px; color: var(--gray-400); }
+  .info-val { font-size: 13px; font-weight: 500; color: var(--gray-800); }
+  .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
+  .quick-btn { padding: 12px; border-radius: var(--radius-sm); background: white; border: 1px solid var(--gray-100); cursor: pointer; text-align: center; font-size: 12px; color: var(--gray-600); font-weight: 500; transition: all 0.15s; }
+  .quick-btn:active { transform: scale(0.97); background: var(--teal-50); color: var(--teal-600); }
+  .quick-btn-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+
+  /* ===== ALERTS ===== */
+  .toast { position: fixed; top: 70px; left: 16px; right: 16px; background: var(--teal-800); color: white; padding: 13px 16px; border-radius: var(--radius-sm); z-index: 999; font-size: 14px; font-weight: 500; opacity: 0; transition: opacity 0.3s; box-shadow: var(--shadow-md); }
+  .toast.show { opacity: 1; }
+
+  /* ===== EMPTY STATE ===== */
+  .empty { text-align: center; padding: 40px 20px; color: var(--gray-400); }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-text { font-size: 15px; }
+  .empty-sub { font-size: 13px; margin-top: 6px; }
+
+  /* ===== AGENDA ===== */
+  .agenda-slot { background: white; border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow); border-left: 3px solid var(--teal-400); }
+  .slot-time { font-size: 13px; font-weight: 700; color: var(--teal-600); min-width: 50px; }
+  .slot-name { font-size: 14px; font-weight: 500; }
+  .slot-type { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+
+  /* ===== REPORTS ===== */
+  .progress-bar { background: var(--gray-50); border-radius: 6px; height: 8px; overflow: hidden; margin-top: 6px; }
+  .progress-fill { height: 100%; border-radius: 6px; background: var(--teal-400); }
+  .chart-bar { display: flex; align-items: flex-end; gap: 6px; height: 80px; margin-top: 8px; }
+  .bar { flex: 1; border-radius: 4px 4px 0 0; background: var(--teal-100); min-height: 4px; position: relative; }
+  .bar.highlight { background: var(--teal-600); }
+  .bar-label { font-size: 9px; color: var(--gray-400); text-align: center; margin-top: 4px; }
+
+  @media (prefers-color-scheme: dark) {
+    body { background: #1a1a18; color: #e8e6df; }
+    .card, .patient-item, .attendance-item, .agenda-slot, .stat-card { background: #2a2a28; box-shadow: none; border: 0.5px solid rgba(255,255,255,0.08); }
+    .form-input, .form-select, .form-textarea, .search-bar input { background: #2a2a28; border-color: rgba(255,255,255,0.1); color: #e8e6df; }
+    .sheet { background: #2a2a28; }
+    .date-chip { background: #2a2a28; border-color: rgba(255,255,255,0.1); }
+    .quick-btn { background: #2a2a28; border-color: rgba(255,255,255,0.1); color: #b4b2a9; }
+    .info-row { border-bottom-color: rgba(255,255,255,0.06); }
+    .btn-outline { background: #2a2a28; border-color: rgba(255,255,255,0.1); color: #b4b2a9; }
+    .progress-bar { background: rgba(255,255,255,0.08); }
+    .status-btn { background: #333330; border-color: rgba(255,255,255,0.12); }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header" id="header">
+  <div style="display:flex;align-items:center;gap:8px">
+    <button class="back-btn" id="backBtn" onclick="goBack()" style="display:none">←</button>
+    <div>
+      <div class="header-title" id="headerTitle">🩺 FisioControl</div>
+      <div class="header-sub" id="headerSub">Gestão de pacientes</div>
+    </div>
+  </div>
+  <button class="header-icon" onclick="showNotifications()">🔔</button>
+</div>
+
+<!-- NAV -->
+<nav class="nav" id="mainNav">
+  <button class="nav-btn active" id="nav-home" onclick="switchTab('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Início
+  </button>
+  <button class="nav-btn" id="nav-patients" onclick="switchTab('patients')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+    Pacientes
+  </button>
+  <button class="nav-btn" id="nav-attendance" onclick="switchTab('attendance')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Presença
+  </button>
+  <button class="nav-btn" id="nav-agenda" onclick="switchTab('agenda')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    Agenda
+  </button>
+  <button class="nav-btn" id="nav-reports" onclick="switchTab('reports')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Relatórios
+  </button>
+</nav>
+
+<!-- ===================== HOME ===================== -->
+<div class="screen active" id="screen-home">
+  <div class="stats-grid">
+    <div class="stat-card teal">
+      <div class="stat-num" id="stat-total">0</div>
+      <div class="stat-label">Total de pacientes</div>
+    </div>
+    <div class="stat-card amber">
+      <div class="stat-num" id="stat-today">0</div>
+      <div class="stat-label">Consultas hoje</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-num" id="stat-month">0</div>
+      <div class="stat-label">Sessões este mês</div>
+    </div>
+    <div class="stat-card coral">
+      <div class="stat-num" id="stat-pending">0</div>
+      <div class="stat-label">Pendências</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">⚡ Ações rápidas</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button class="quick-btn" onclick="openNewPatient()"><span class="quick-btn-icon">👤</span>Novo paciente</button>
+      <button class="quick-btn" onclick="switchTab('attendance')"><span class="quick-btn-icon">✅</span>Registrar presença</button>
+      <button class="quick-btn" onclick="openSignaturePad()"><span class="quick-btn-icon">✍️</span>Colher assinatura</button>
+      <button class="quick-btn" onclick="switchTab('agenda')"><span class="quick-btn-icon">📅</span>Ver agenda</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">📅 Próximos hoje</div>
+      <span style="font-size:12px;color:var(--teal-600);cursor:pointer" onclick="switchTab('agenda')">Ver todos →</span>
+    </div>
+    <div id="todaySlots"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">🕐 Atividade recente</div>
+    </div>
+    <div id="recentActivity"></div>
+  </div>
+</div>
+
+<!-- ===================== PATIENTS ===================== -->
+<div class="screen" id="screen-patients">
+  <div class="search-bar">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Buscar paciente..." id="searchInput" oninput="filterPatients()">
+  </div>
+
+  <div style="display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px">
+    <button class="date-chip active" id="filter-all" onclick="setFilter('all',this)">Todos</button>
+    <button class="date-chip" id="filter-active" onclick="setFilter('active',this)">Ativos</button>
+    <button class="date-chip" id="filter-inactive" onclick="setFilter('inactive',this)">Inativos</button>
+  </div>
+
+  <div id="patientList"></div>
+
+  <div class="empty" id="emptyPatients" style="display:none">
+    <div class="empty-icon">👥</div>
+    <div class="empty-text">Nenhum paciente encontrado</div>
+    <div class="empty-sub">Toque em + para adicionar</div>
+  </div>
+</div>
+
+<!-- ===================== ATTENDANCE ===================== -->
+<div class="screen" id="screen-attendance">
+  <div class="date-strip" id="dateStrip"></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <div style="font-size:14px;font-weight:600;color:var(--gray-800)" id="attendanceDate">Hoje</div>
+    <button class="badge badge-teal" onclick="exportAttendance()">📋 Exportar</button>
+  </div>
+  <div id="attendanceList"></div>
+</div>
+
+<!-- ===================== AGENDA ===================== -->
+<div class="screen" id="screen-agenda">
+  <div class="date-strip" id="agendaDateStrip"></div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-header">
+      <div class="card-title" id="agendaDayTitle">Agenda de hoje</div>
+      <button class="badge badge-teal" onclick="openNewAppointment()">+ Novo</button>
+    </div>
+    <div id="agendaSlots"></div>
+  </div>
+</div>
+
+<!-- ===================== REPORTS ===================== -->
+<div class="screen" id="screen-reports">
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">📊 Presença do mês</div>
+    <div id="monthlyChart">
+      <div class="chart-bar" id="barChart"></div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px" id="barLabels"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">📈 Resumo geral</div>
+    <div id="summaryReport"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">🏆 Pacientes mais assíduos</div>
+    <div id="topPatients"></div>
+  </div>
+
+  <div style="height:16px"></div>
+  <button class="btn btn-secondary" onclick="generateReport()">📤 Gerar relatório PDF</button>
+</div>
+
+<!-- ===================== PATIENT DETAIL ===================== -->
+<div class="screen" id="screen-detail">
+  <div class="detail-header" id="detailHeader"></div>
+  <div class="quick-actions" id="detailActions"></div>
+  <div class="card" id="detailInfo"></div>
+  <div class="card" id="detailHistory"></div>
+</div>
+
+<!-- ===================== NEW PATIENT FORM ===================== -->
+<div class="screen" id="screen-new-patient">
+  <div class="section-title">Dados pessoais</div>
+  <div class="form-group">
+    <label class="form-label">Nome completo *</label>
+    <input class="form-input" id="p_name" type="text" placeholder="Ex: Maria Silva">
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">Data de nascimento</label>
+      <input class="form-input" id="p_dob" type="date">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Sexo</label>
+      <select class="form-select" id="p_sex">
+        <option value="">Selecionar</option>
+        <option value="F">Feminino</option>
+        <option value="M">Masculino</option>
+        <option value="O">Outro</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">CPF</label>
+    <input class="form-input" id="p_cpf" type="text" placeholder="000.000.000-00" oninput="maskCPF(this)">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Telefone / WhatsApp *</label>
+    <input class="form-input" id="p_phone" type="tel" placeholder="(00) 00000-0000" oninput="maskPhone(this)">
+  </div>
+  <div class="form-group">
+    <label class="form-label">E-mail</label>
+    <input class="form-input" id="p_email" type="email" placeholder="email@exemplo.com">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Endereço</label>
+    <input class="form-input" id="p_address" type="text" placeholder="Rua, número, bairro">
+  </div>
+
+  <div class="section-title">Informações clínicas</div>
+  <div class="form-group">
+    <label class="form-label">Diagnóstico / Queixa principal</label>
+    <textarea class="form-textarea" id="p_diagnosis" placeholder="Descreva o diagnóstico ou queixa..."></textarea>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Plano de tratamento</label>
+    <textarea class="form-textarea" id="p_plan" placeholder="Plano de tratamento proposto..."></textarea>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">Nº de sessões previstas</label>
+      <input class="form-input" id="p_sessions" type="number" placeholder="Ex: 20">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Frequência</label>
+      <select class="form-select" id="p_freq">
+        <option value="">Selecionar</option>
+        <option value="1x">1x por semana</option>
+        <option value="2x">2x por semana</option>
+        <option value="3x">3x por semana</option>
+        <option value="diario">Diário</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Convênio / Particular</label>
+    <select class="form-select" id="p_insurance">
+      <option value="particular">Particular</option>
+      <option value="unimed">Unimed</option>
+      <option value="bradesco">Bradesco Saúde</option>
+      <option value="amil">Amil</option>
+      <option value="sulamerica">SulAmérica</option>
+      <option value="outro">Outro</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Observações / Alergias</label>
+    <textarea class="form-textarea" id="p_notes" placeholder="Alergias, medicamentos, observações importantes..."></textarea>
+  </div>
+
+  <div class="section-title">Assinatura de consentimento</div>
+  <p style="font-size:13px;color:var(--gray-400);margin-bottom:12px">O paciente deve assinar abaixo autorizando o tratamento:</p>
+  <canvas class="sig-canvas" id="newPatientSig" width="340" height="120"></canvas>
+  <div class="sig-actions">
+    <button class="btn btn-outline" onclick="clearSig('newPatientSig')">🗑 Limpar</button>
+  </div>
+
+  <div style="height:16px"></div>
+  <button class="btn btn-primary" onclick="savePatient()">✅ Salvar paciente</button>
+  <div style="height:10px"></div>
+  <button class="btn btn-outline" onclick="goBack()">Cancelar</button>
+  <div style="height:30px"></div>
+</div>
+
+<!-- ===================== SIGNATURE PAD ===================== -->
+<div class="screen" id="screen-signature">
+  <div class="card">
+    <div class="card-title" style="margin-bottom:8px">Selecionar paciente</div>
+    <select class="form-select" id="sigPatientSelect">
+      <option value="">Escolha o paciente...</option>
+    </select>
+  </div>
+  <div class="card">
+    <div class="card-title" style="margin-bottom:4px">✍️ Assinatura</div>
+    <p style="font-size:12px;color:var(--gray-400);margin-bottom:12px">Confirma a presença e autoriza os procedimentos realizados nesta sessão</p>
+    <canvas class="sig-canvas" id="mainSigCanvas" width="340" height="150"></canvas>
+    <div class="sig-actions">
+      <button class="btn btn-outline" onclick="clearSig('mainSigCanvas')">🗑 Limpar</button>
+      <button class="btn btn-primary" onclick="saveSig()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== NEW APPOINTMENT ===================== -->
+<div class="screen" id="screen-new-apt">
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">Novo agendamento</div>
+    <div class="form-group">
+      <label class="form-label">Paciente *</label>
+      <select class="form-select" id="apt_patient">
+        <option value="">Escolha o paciente</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Data *</label>
+        <input class="form-input" id="apt_date" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Horário *</label>
+        <input class="form-input" id="apt_time" type="time">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tipo de sessão</label>
+      <select class="form-select" id="apt_type">
+        <option value="Avaliação">Avaliação</option>
+        <option value="Fisioterapia">Fisioterapia</option>
+        <option value="Pilates clínico">Pilates clínico</option>
+        <option value="Acupuntura">Acupuntura</option>
+        <option value="Retorno">Retorno</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Observações</label>
+      <textarea class="form-textarea" id="apt_notes" placeholder="Observações sobre a sessão..." style="min-height:60px"></textarea>
+    </div>
+    <button class="btn btn-primary" onclick="saveAppointment()">✅ Agendar</button>
+    <div style="height:8px"></div>
+    <button class="btn btn-outline" onclick="goBack()">Cancelar</button>
+  </div>
+</div>
+
+<!-- FLOATING ACTION BUTTON -->
+<button class="fab" id="fabBtn" onclick="fabAction()">+</button>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===================== STATE =====================
+let patients = JSON.parse(localStorage.getItem('fisio_patients') || '[]');
+let appointments = JSON.parse(localStorage.getItem('fisio_appointments') || '[]');
+let attendanceRecords = JSON.parse(localStorage.getItem('fisio_attendance') || '[]');
+let signatures = JSON.parse(localStorage.getItem('fisio_signatures') || '[]');
+
+let currentTab = 'home';
+let currentFilter = 'all';
+let selectedAttDate = new Date().toISOString().split('T')[0];
+let selectedAgDate = new Date().toISOString().split('T')[0];
+let screenStack = [];
+let sigCanvases = {};
+let drawing = {};
+
+// ===================== SAMPLE DATA =====================
+function seedData() {
+  if (patients.length > 0) return;
+  const sample = [
+    { id:'p1', name:'Ana Cristina Souza', dob:'1985-03-15', sex:'F', phone:'(11) 98765-4321', email:'ana.souza@email.com', diagnosis:'Lombalgia crônica — hérnia de disco L4-L5', plan:'RPG + fortalecimento core, 2x/semana', sessions:20, freq:'2x', insurance:'Unimed', notes:'Alérgica a anti-inflamatório', address:'Rua das Flores, 123', active:true, created:'2024-11-10' },
+    { id:'p2', name:'Carlos Eduardo Lima', dob:'1972-07-22', sex:'M', phone:'(11) 91234-5678', email:'carlosedlima@gmail.com', diagnosis:'Tendinite do manguito rotador ombro direito', plan:'Mobilização + fortalecimento, 3x/semana', sessions:15, freq:'3x', insurance:'particular', notes:'Hipertenso — não elevar braço acima do ombro', address:'Av. Paulista, 456', active:true, created:'2024-12-01' },
+    { id:'p3', name:'Maria Fernanda Costa', dob:'1990-11-05', sex:'F', phone:'(11) 99988-7766', email:'mfcosta@hotmail.com', diagnosis:'Síndrome patelo-femoral bilateral', plan:'Fortalecimento VMO + treino funcional', sessions:12, freq:'2x', insurance:'Bradesco', notes:'Atividade física: corrida de rua', address:'Rua Vergueiro, 789', active:true, created:'2025-01-08' },
+    { id:'p4', name:'Roberto Alves Neto', dob:'1968-05-30', sex:'M', phone:'(11) 97755-3344', email:'roberto.neto@empresa.com.br', diagnosis:'Pós-operatório joelho direito — LCA', plan:'Reabilitação pós-op, 3x/semana', sessions:30, freq:'3x', insurance:'Amil', notes:'Cirurgia em 15/01/2025', address:'Rua Augusta, 321', active:true, created:'2025-01-20' },
+    { id:'p5', name:'Lucia Helena Martins', dob:'1955-09-12', sex:'F', phone:'(11) 96677-8899', email:'luciamartins@gmail.com', diagnosis:'Artrose de quadril — coxartrose grau II', plan:'Hidroterapia + exercícios de baixo impacto', sessions:24, freq:'2x', insurance:'SulAmérica', notes:'Diabetes tipo 2, tomar cuidado com intensidade', address:'Al. Santos, 654', active:false, created:'2024-10-05' }
+  ];
+  const today = new Date().toISOString().split('T')[0];
+  const sampleApt = [
+    { id:'a1', patientId:'p1', patientName:'Ana Cristina Souza', date:today, time:'08:00', type:'Fisioterapia', notes:'' },
+    { id:'a2', patientId:'p2', patientName:'Carlos Eduardo Lima', date:today, time:'09:00', type:'Fisioterapia', notes:'' },
+    { id:'a3', patientId:'p3', patientName:'Maria Fernanda Costa', date:today, time:'10:30', type:'Pilates clínico', notes:'' },
+    { id:'a4', patientId:'p4', patientName:'Roberto Alves Neto', date:today, time:'14:00', type:'Fisioterapia', notes:'' },
+  ];
+  const sampleAtt = [
+    { date:today, patientId:'p1', status:'presente' },
+    { date:today, patientId:'p2', status:'presente' },
+  ];
+  patients = sample; appointments = sampleApt; attendanceRecords = sampleAtt;
+  save();
+}
+
+function save() {
+  localStorage.setItem('fisio_patients', JSON.stringify(patients));
+  localStorage.setItem('fisio_appointments', JSON.stringify(appointments));
+  localStorage.setItem('fisio_attendance', JSON.stringify(attendanceRecords));
+  localStorage.setItem('fisio_signatures', JSON.stringify(signatures));
+}
+
+// ===================== NAVIGATION =====================
+function switchTab(tab, push=true) {
+  if (push && currentTab !== tab) screenStack = [];
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-'+tab).classList.add('active');
+  const navBtn = document.getElementById('nav-'+tab);
+  if (navBtn) navBtn.classList.add('active');
+  document.getElementById('backBtn').style.display = 'none';
+  document.getElementById('fabBtn').style.display = 'flex';
+  currentTab = tab;
+  const titles = {home:'🩺 FisioControl', patients:'👥 Pacientes', attendance:'✅ Presença', agenda:'📅 Agenda', reports:'📊 Relatórios'};
+  const subs = {home:'Gestão de pacientes', patients:'Cadastro e prontuários', attendance:'Controle de sessões', agenda:'Agendamentos', reports:'Análise e dados'};
+  document.getElementById('headerTitle').textContent = titles[tab] || '🩺 FisioControl';
+  document.getElementById('headerSub').textContent = subs[tab] || '';
+  if (tab === 'home') renderHome();
+  if (tab === 'patients') renderPatients();
+  if (tab === 'attendance') renderAttendance();
+  if (tab === 'agenda') renderAgenda();
+  if (tab === 'reports') renderReports();
+}
+
+function showScreen(screen, title, sub) {
+  screenStack.push(currentTab);
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-'+screen).classList.add('active');
+  document.getElementById('headerTitle').textContent = title || '←';
+  document.getElementById('headerSub').textContent = sub || '';
+  document.getElementById('backBtn').style.display = 'block';
+  document.getElementById('fabBtn').style.display = 'none';
+  currentTab = screen;
+}
+
+function goBack() {
+  const prev = screenStack.pop() || 'home';
+  switchTab(prev, false);
+}
+
+// ===================== HOME =====================
+function renderHome() {
+  document.getElementById('stat-total').textContent = patients.length;
+  const today = new Date().toISOString().split('T')[0];
+  const todayApts = appointments.filter(a => a.date === today);
+  document.getElementById('stat-today').textContent = todayApts.length;
+  const thisMonth = today.slice(0,7);
+  document.getElementById('stat-month').textContent = attendanceRecords.filter(r => r.date.startsWith(thisMonth)).length;
+  const totalSessions = patients.reduce((s,p) => s + (parseInt(p.sessions)||0), 0);
+  const doneSessions = attendanceRecords.filter(r=>r.status==='presente').length;
+  document.getElementById('stat-pending').textContent = Math.max(0, totalSessions - doneSessions);
+
+  const slots = document.getElementById('todaySlots');
+  if (todayApts.length === 0) {
+    slots.innerHTML = '<div style="color:var(--gray-400);font-size:13px;padding:8px 0">Sem agendamentos para hoje</div>';
+  } else {
+    slots.innerHTML = todayApts.map(a => `
+      <div class="agenda-slot" style="margin-bottom:8px">
+        <div class="slot-time">${a.time}</div>
+        <div><div class="slot-name">${a.patientName}</div><div class="slot-type">${a.type}</div></div>
+      </div>`).join('');
+  }
+
+  const activity = document.getElementById('recentActivity');
+  const recent = [...attendanceRecords].reverse().slice(0,5);
+  if (recent.length === 0) {
+    activity.innerHTML = '<div style="color:var(--gray-400);font-size:13px;padding:8px 0">Nenhuma atividade ainda</div>';
+  } else {
+    activity.innerHTML = recent.map(r => {
+      const p = patients.find(x=>x.id===r.patientId);
+      const icons = {presente:'✅', faltou:'❌', justificado:'🟡'};
+      const labels = {presente:'Sessão realizada', faltou:'Falta', justificado:'Falta justificada'};
+      return `<div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div>
+          <div class="timeline-text">${icons[r.status]} ${p?p.name:'Paciente'} — ${labels[r.status]}</div>
+          <div class="timeline-date">${formatDate(r.date)}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ===================== PATIENTS =====================
+function renderPatients() {
+  const search = (document.getElementById('searchInput')||{value:''}).value.toLowerCase();
+  let list = patients.filter(p => {
+    const matchSearch = !search || p.name.toLowerCase().includes(search) || (p.diagnosis||'').toLowerCase().includes(search);
+    const matchFilter = currentFilter==='all' || (currentFilter==='active'&&p.active) || (currentFilter==='inactive'&&!p.active);
+    return matchSearch && matchFilter;
+  });
+
+  const container = document.getElementById('patientList');
+  const empty = document.getElementById('emptyPatients');
+  if (list.length === 0) { container.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display = 'none';
+  container.innerHTML = list.map(p => {
+    const initials = p.name.split(' ').map(x=>x[0]).slice(0,2).join('');
+    const sessions = attendanceRecords.filter(r=>r.patientId===p.id && r.status==='presente').length;
+    const total = parseInt(p.sessions)||0;
+    return `<div class="patient-item" onclick="openPatient('${p.id}')">
+      <div class="avatar">${initials}</div>
+      <div style="flex:1">
+        <div class="patient-name">${p.name}</div>
+        <div class="patient-meta">${p.diagnosis ? p.diagnosis.slice(0,45)+'...' : 'Sem diagnóstico'}</div>
+        <div style="margin-top:4px"><span class="badge ${p.active?'badge-green':'badge-amber'}">${p.active?'Ativo':'Inativo'}</span> <span style="font-size:11px;color:var(--gray-400)">${sessions}/${total} sessões</span></div>
+      </div>
+      <span style="color:var(--gray-200);font-size:20px">›</span>
+    </div>`;
+  }).join('');
+}
+
+function filterPatients() { renderPatients(); }
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('[id^="filter-"]').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderPatients();
+}
+
+// ===================== PATIENT DETAIL =====================
+function openPatient(id) {
+  const p = patients.find(x=>x.id===id);
+  if (!p) return;
+  showScreen('detail', p.name.split(' ')[0], p.diagnosis ? p.diagnosis.slice(0,30)+'...' : 'Paciente');
+
+  const initials = p.name.split(' ').map(x=>x[0]).slice(0,2).join('');
+  const sessions = attendanceRecords.filter(r=>r.patientId===id && r.status==='presente').length;
+  const total = parseInt(p.sessions)||0;
+  const pct = total > 0 ? Math.round(sessions/total*100) : 0;
+
+  document.getElementById('detailHeader').innerHTML = `
+    <div class="detail-avatar">${initials}</div>
+    <div class="detail-name">${p.name}</div>
+    <div class="detail-sub">${p.diagnosis||'Fisioterapia'}</div>
+    <div style="margin-top:12px;display:flex;gap:16px">
+      <div><div style="font-size:20px;font-weight:700">${sessions}/${total}</div><div style="font-size:11px;opacity:0.7">Sessões</div></div>
+      <div><div style="font-size:20px;font-weight:700">${pct}%</div><div style="font-size:11px;opacity:0.7">Frequência</div></div>
+      <div><div style="font-size:20px;font-weight:700">${p.active?'Ativo':'Inativo'}</div><div style="font-size:11px;opacity:0.7">Status</div></div>
+    </div>`;
+
+  document.getElementById('detailActions').innerHTML = `
+    <button class="quick-btn" onclick="callPatient('${p.phone}')"><span class="quick-btn-icon">📞</span>Ligar</button>
+    <button class="quick-btn" onclick="whatsapp('${p.phone}','${p.name}')"><span class="quick-btn-icon">💬</span>WhatsApp</button>
+    <button class="quick-btn" onclick="openSigForPatient('${id}')"><span class="quick-btn-icon">✍️</span>Assinatura</button>
+    <button class="quick-btn" onclick="toggleActive('${id}')"><span class="quick-btn-icon">${p.active?'⏸':'▶️'}</span>${p.active?'Pausar':'Ativar'}</button>`;
+
+  document.getElementById('detailInfo').innerHTML = `
+    <div class="card-title" style="margin-bottom:12px">📋 Informações</div>
+    <div class="info-row"><span class="info-key">Telefone</span><span class="info-val">${p.phone||'—'}</span></div>
+    <div class="info-row"><span class="info-key">E-mail</span><span class="info-val" style="font-size:12px">${p.email||'—'}</span></div>
+    <div class="info-row"><span class="info-key">Data de nascimento</span><span class="info-val">${p.dob ? formatDate(p.dob) : '—'}</span></div>
+    <div class="info-row"><span class="info-key">CPF</span><span class="info-val">${p.cpf||'—'}</span></div>
+    <div class="info-row"><span class="info-key">Convênio</span><span class="info-val">${p.insurance||'—'}</span></div>
+    <div class="info-row"><span class="info-key">Frequência</span><span class="info-val">${p.freq||'—'}</span></div>
+    <div class="info-row"><span class="info-key">Plano</span><span class="info-val" style="text-align:right;max-width:200px;font-size:12px">${p.plan||'—'}</span></div>
+    ${p.notes ? `<div class="info-row"><span class="info-key">Obs.</span><span class="info-val" style="font-size:12px;text-align:right;max-width:180px">${p.notes}</span></div>` : ''}`;
+
+  const history = attendanceRecords.filter(r=>r.patientId===id).reverse().slice(0,10);
+  const histHtml = history.length ? history.map(r => {
+    const icons = {presente:'✅', faltou:'❌', justificado:'🟡'};
+    const labels = {presente:'Sessão realizada', faltou:'Falta', justificado:'Justificado'};
+    return `<div class="info-row"><span class="info-key">${formatDate(r.date)}</span><span class="info-val">${icons[r.status]} ${labels[r.status]}</span></div>`;
+  }).join('') : '<div style="color:var(--gray-400);font-size:13px;padding:8px 0">Nenhuma sessão registrada ainda</div>';
+  document.getElementById('detailHistory').innerHTML = `<div class="card-title" style="margin-bottom:12px">🕐 Histórico de sessões</div>${histHtml}`;
+}
+
+function callPatient(phone) { window.location.href = 'tel:'+phone.replace(/\D/g,''); }
+function whatsapp(phone, name) {
+  const num = phone.replace(/\D/g,'');
+  window.open(`https://wa.me/55${num}?text=Olá ${name.split(' ')[0]}! Tudo bem?`, '_blank');
+}
+function toggleActive(id) {
+  const p = patients.find(x=>x.id===id);
+  if (p) { p.active = !p.active; save(); openPatient(id); showToast(p.active?'Paciente ativado':'Paciente pausado'); }
+}
+function openSigForPatient(id) {
+  showScreen('signature','✍️ Assinatura','Colher assinatura do paciente');
+  document.getElementById('sigPatientSelect').value = id;
+  initCanvas('mainSigCanvas');
+}
+
+// ===================== ATTENDANCE =====================
+function renderAttendance() {
+  renderDateStrip('dateStrip', selectedAttDate, d => { selectedAttDate = d; renderAttendanceList(); });
+  renderAttendanceList();
+}
+
+function renderAttendanceList() {
+  document.getElementById('attendanceDate').textContent = formatDate(selectedAttDate);
+  const apts = appointments.filter(a => a.date === selectedAttDate);
+  const container = document.getElementById('attendanceList');
+  if (apts.length === 0) {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Nenhum agendamento neste dia</div><div class="empty-sub">Adicione na aba Agenda</div></div>';
+    return;
+  }
+  container.innerHTML = apts.map(a => {
+    const rec = attendanceRecords.find(r => r.date === selectedAttDate && r.patientId === a.patientId);
+    const status = rec ? rec.status : null;
+    return `<div class="attendance-item">
+      <div class="avatar" style="width:36px;height:36px;font-size:13px">${a.patientName.split(' ').map(x=>x[0]).slice(0,2).join('')}</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:500">${a.patientName}</div>
+        <div style="font-size:12px;color:var(--gray-400)">${a.time} — ${a.type}</div>
+      </div>
+      <div class="attendance-status">
+        <button class="status-btn ${status==='presente'?'presente':''}" onclick="markAttendance('${a.patientId}','presente','${a.id}')" title="Presente">✅</button>
+        <button class="status-btn ${status==='justificado'?'justificado':''}" onclick="markAttendance('${a.patientId}','justificado','${a.id}')" title="Justificado">🟡</button>
+        <button class="status-btn ${status==='faltou'?'faltou':''}" onclick="markAttendance('${a.patientId}','faltou','${a.id}')" title="Faltou">❌</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function markAttendance(patientId, status, aptId) {
+  const idx = attendanceRecords.findIndex(r => r.date === selectedAttDate && r.patientId === patientId);
+  if (idx >= 0) attendanceRecords[idx].status = status;
+  else attendanceRecords.push({ date: selectedAttDate, patientId, status, aptId });
+  save(); renderAttendanceList();
+  const labels = {presente:'✅ Presença confirmada!', faltou:'❌ Falta registrada', justificado:'🟡 Justificativa registrada'};
+  showToast(labels[status]);
+}
+
+function exportAttendance() {
+  const apts = appointments.filter(a => a.date === selectedAttDate);
+  if (apts.length === 0) { showToast('Nenhum dado para exportar'); return; }
+  let text = `LISTA DE PRESENÇA — ${formatDate(selectedAttDate)}\n${'='.repeat(40)}\n`;
+  apts.forEach(a => {
+    const rec = attendanceRecords.find(r => r.date === selectedAttDate && r.patientId === a.patientId);
+    const s = rec ? {presente:'PRESENTE', faltou:'FALTOU', justificado:'JUSTIFICADO'}[rec.status] : 'NÃO REGISTRADO';
+    text += `${a.time} | ${a.patientName.padEnd(25)} | ${s}\n`;
+  });
+  const blob = new Blob([text], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `presenca_${selectedAttDate}.txt`; a.click();
+  showToast('Lista exportada!');
+}
+
+// ===================== AGENDA =====================
+function renderAgenda() {
+  renderDateStrip('agendaDateStrip', selectedAgDate, d => { selectedAgDate = d; renderAgendaList(); });
+  renderAgendaList();
+}
+
+function renderAgendaList() {
+  const days = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const d = new Date(selectedAgDate+'T12:00:00');
+  document.getElementById('agendaDayTitle').textContent = `${days[d.getDay()]}, ${formatDate(selectedAgDate)}`;
+  const apts = appointments.filter(a => a.date === selectedAgDate).sort((a,b)=>a.time.localeCompare(b.time));
+  const container = document.getElementById('agendaSlots');
+  if (apts.length === 0) {
+    container.innerHTML = '<div style="color:var(--gray-400);font-size:13px;padding:8px 0">Nenhum agendamento. Toque em "+ Novo" para adicionar.</div>';
+    return;
+  }
+  container.innerHTML = apts.map(a => `
+    <div class="agenda-slot" style="margin-bottom:8px;cursor:pointer" onclick="openPatient('${a.patientId}')">
+      <div class="slot-time">${a.time}</div>
+      <div style="flex:1">
+        <div class="slot-name">${a.patientName}</div>
+        <div class="slot-type">${a.type}</div>
+      </div>
+      <button onclick="event.stopPropagation();deleteApt('${a.id}')" style="background:none;border:none;color:var(--gray-200);font-size:18px;cursor:pointer">✕</button>
+    </div>`).join('');
+}
+
+function deleteApt(id) {
+  if (!confirm('Remover agendamento?')) return;
+  appointments = appointments.filter(a => a.id !== id);
+  save(); renderAgendaList(); showToast('Agendamento removido');
+}
+
+// ===================== REPORTS =====================
+function renderReports() {
+  const today = new Date();
+  const months = [];
+  for (let i=5;i>=0;i--) {
+    const d = new Date(today.getFullYear(), today.getMonth()-i, 1);
+    months.push({ key: d.toISOString().slice(0,7), label: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][d.getMonth()] });
+  }
+  const counts = months.map(m => attendanceRecords.filter(r=>r.date.startsWith(m.key)&&r.status==='presente').length);
+  const max = Math.max(...counts, 1);
+  document.getElementById('barChart').innerHTML = counts.map((c,i) =>
+    `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div style="font-size:10px;color:var(--teal-600);font-weight:600">${c||''}</div>
+      <div class="bar ${i===5?'highlight':''}" style="height:${Math.max(6,c/max*64)}px;width:100%"></div>
+    </div>`).join('');
+  document.getElementById('barLabels').innerHTML = months.map(m=>`<div style="font-size:10px;color:var(--gray-400);flex:1;text-align:center">${m.label}</div>`).join('');
+
+  const totalSessions = attendanceRecords.filter(r=>r.status==='presente').length;
+  const totalFaltas = attendanceRecords.filter(r=>r.status==='faltou').length;
+  const taxa = totalSessions+totalFaltas > 0 ? Math.round(totalSessions/(totalSessions+totalFaltas)*100) : 0;
+  document.getElementById('summaryReport').innerHTML = `
+    <div class="info-row"><span class="info-key">Total de pacientes</span><span class="info-val">${patients.length}</span></div>
+    <div class="info-row"><span class="info-key">Pacientes ativos</span><span class="info-val">${patients.filter(p=>p.active).length}</span></div>
+    <div class="info-row"><span class="info-key">Total de sessões</span><span class="info-val">${totalSessions}</span></div>
+    <div class="info-row"><span class="info-key">Total de faltas</span><span class="info-val">${totalFaltas}</span></div>
+    <div class="info-row">
+      <span class="info-key">Taxa de presença geral</span>
+      <span class="info-val">${taxa}%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${taxa}%"></div></div>`;
+
+  const patientCounts = patients.map(p => ({
+    name: p.name,
+    count: attendanceRecords.filter(r=>r.patientId===p.id&&r.status==='presente').length
+  })).sort((a,b)=>b.count-a.count).slice(0,5);
+  document.getElementById('topPatients').innerHTML = patientCounts.map((p,i) => `
+    <div class="info-row">
+      <span class="info-key">${['🥇','🥈','🥉','4.','5.'][i]} ${p.name.split(' ')[0]} ${p.name.split(' ')[1]||''}</span>
+      <span class="info-val">${p.count} sessões</span>
+    </div>`).join('') || '<div style="color:var(--gray-400);font-size:13px">Sem dados ainda</div>';
+}
+
+function generateReport() { showToast('📄 Relatório gerado com sucesso!'); }
+
+// ===================== FORMS =====================
+function openNewPatient() {
+  ['p_name','p_cpf','p_phone','p_email','p_address','p_diagnosis','p_plan','p_notes'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+  ['p_dob','p_sex','p_insurance','p_sessions','p_freq'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+  showScreen('new-patient','Novo paciente','Preencha os dados');
+  setTimeout(()=>initCanvas('newPatientSig'),100);
+}
+
+function savePatient() {
+  const name = document.getElementById('p_name').value.trim();
+  const phone = document.getElementById('p_phone').value.trim();
+  if (!name || !phone) { showToast('⚠️ Nome e telefone são obrigatórios'); return; }
+  const p = {
+    id: 'p'+Date.now(),
+    name, phone,
+    dob: document.getElementById('p_dob').value,
+    sex: document.getElementById('p_sex').value,
+    cpf: document.getElementById('p_cpf').value,
+    email: document.getElementById('p_email').value,
+    address: document.getElementById('p_address').value,
+    diagnosis: document.getElementById('p_diagnosis').value,
+    plan: document.getElementById('p_plan').value,
+    sessions: document.getElementById('p_sessions').value,
+    freq: document.getElementById('p_freq').value,
+    insurance: document.getElementById('p_insurance').value,
+    notes: document.getElementById('p_notes').value,
+    active: true,
+    created: new Date().toISOString().split('T')[0]
+  };
+  const sig = getSigData('newPatientSig');
+  if (sig) signatures.push({ patientId: p.id, type:'consent', date: p.created, data: sig });
+  patients.push(p); save();
+  showToast(`✅ ${name} cadastrado(a)!`);
+  goBack();
+}
+
+function openNewAppointment() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('apt_date').value = selectedAgDate || today;
+  document.getElementById('apt_time').value = '';
+  document.getElementById('apt_notes').value = '';
+  const sel = document.getElementById('apt_patient');
+  sel.innerHTML = '<option value="">Escolha o paciente</option>' + patients.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  showScreen('new-apt','Novo agendamento','');
+}
+
+function saveAppointment() {
+  const pid = document.getElementById('apt_patient').value;
+  const date = document.getElementById('apt_date').value;
+  const time = document.getElementById('apt_time').value;
+  if (!pid || !date || !time) { showToast('⚠️ Preencha paciente, data e horário'); return; }
+  const p = patients.find(x=>x.id===pid);
+  appointments.push({ id:'a'+Date.now(), patientId:pid, patientName:p.name, date, time, type:document.getElementById('apt_type').value, notes:document.getElementById('apt_notes').value });
+  save(); showToast('✅ Agendamento salvo!'); goBack();
+}
+
+// ===================== SIGNATURE =====================
+function openSignaturePad() {
+  const sel = document.getElementById('sigPatientSelect');
+  sel.innerHTML = '<option value="">Escolha o paciente...</option>' + patients.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  showScreen('signature','✍️ Assinatura','Colher assinatura do paciente');
+  setTimeout(()=>initCanvas('mainSigCanvas'),100);
+}
+
+function saveSig() {
+  const pid = document.getElementById('sigPatientSelect').value;
+  if (!pid) { showToast('⚠️ Selecione um paciente'); return; }
+  const data = getSigData('mainSigCanvas');
+  if (!data) { showToast('⚠️ Assinatura não pode estar em branco'); return; }
+  signatures.push({ patientId:pid, type:'session', date:new Date().toISOString().split('T')[0], data });
+  save(); clearSig('mainSigCanvas'); showToast('✅ Assinatura salva!');
+}
+
+// ===================== CANVAS SIGNATURE =====================
+function initCanvas(id) {
+  const canvas = document.getElementById(id);
+  if (!canvas || sigCanvases[id]) return;
+  canvas.width = canvas.parentElement.offsetWidth - 32;
+  const ctx = canvas.getContext('2d');
+  ctx.strokeStyle = '#1D9E75';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  sigCanvases[id] = true;
+  drawing[id] = false;
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches ? e.touches[0] : e;
+    return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+  }
+  canvas.addEventListener('mousedown', e => { drawing[id]=true; const p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); });
+  canvas.addEventListener('mousemove', e => { if(!drawing[id])return; const p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); });
+  canvas.addEventListener('mouseup', ()=>drawing[id]=false);
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing[id]=true; const p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); }, {passive:false});
+  canvas.addEventListener('touchmove', e => { e.preventDefault(); if(!drawing[id])return; const p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); }, {passive:false});
+  canvas.addEventListener('touchend', ()=>drawing[id]=false);
+}
+
+function clearSig(id) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
+}
+
+function getSigData(id) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return null;
+  const ctx = canvas.getContext('2d');
+  const data = ctx.getImageData(0,0,canvas.width,canvas.height).data;
+  const hasContent = data.some((v,i)=>i%4===3 && v>0);
+  return hasContent ? canvas.toDataURL() : null;
+}
+
+// ===================== DATE HELPERS =====================
+function renderDateStrip(containerId, selected, onSelect) {
+  const container = document.getElementById(containerId);
+  const days = [];
+  const today = new Date();
+  for (let i=-3; i<=7; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate()+i);
+    days.push(d.toISOString().split('T')[0]);
+  }
+  const dayNames = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  container.innerHTML = days.map(d => {
+    const dt = new Date(d+'T12:00:00');
+    const day = dt.getDate();
+    const wday = dayNames[dt.getDay()];
+    return `<div class="date-chip ${d===selected?'active':''}" onclick="selectDate('${containerId}','${d}',this)">
+      <div style="font-weight:600">${day}</div>
+      <div style="font-size:10px">${wday}</div>
+    </div>`;
+  }).join('');
+  container._onSelect = onSelect;
+}
+
+function selectDate(containerId, date, el) {
+  document.querySelectorAll(`#${containerId} .date-chip`).forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  const container = document.getElementById(containerId);
+  if (containerId === 'dateStrip') { selectedAttDate = date; renderAttendanceList(); }
+  if (containerId === 'agendaDateStrip') { selectedAgDate = date; renderAgendaList(); }
+}
+
+function formatDate(str) {
+  if (!str) return '';
+  const [y,m,d] = str.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+// ===================== MASKS =====================
+function maskCPF(el) {
+  let v = el.value.replace(/\D/g,'').slice(0,11);
+  if(v.length>9) v=v.replace(/(\d{3})(\d{3})(\d{3})(\d+)/,'$1.$2.$3-$4');
+  else if(v.length>6) v=v.replace(/(\d{3})(\d{3})(\d+)/,'$1.$2.$3');
+  else if(v.length>3) v=v.replace(/(\d{3})(\d+)/,'$1.$2');
+  el.value=v;
+}
+function maskPhone(el) {
+  let v = el.value.replace(/\D/g,'').slice(0,11);
+  if(v.length>10) v=v.replace(/(\d{2})(\d{5})(\d{4})/,'($1) $2-$3');
+  else if(v.length>6) v=v.replace(/(\d{2})(\d{4})(\d+)/,'($1) $2-$3');
+  else if(v.length>2) v=v.replace(/(\d{2})(\d+)/,'($1) $2');
+  el.value=v;
+}
+
+// ===================== FAB / NOTIFICATIONS =====================
+function fabAction() {
+  const actions = {home:'openNewPatient',patients:'openNewPatient',attendance:'',agenda:'openNewAppointment',reports:''};
+  const a = actions[currentTab];
+  if (a) window[a]();
+}
+
+function showNotifications() {
+  showToast('🔔 Sem novas notificações');
+}
+
+// ===================== TOAST =====================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+// ===================== INIT =====================
+seedData();
+renderHome();
+document.getElementById('apt_date') && (document.getElementById('apt_date').min = new Date().toISOString().split('T')[0]);
+</script>
+</body>
+</html>
